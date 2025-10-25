@@ -1,4 +1,4 @@
-name: CI - Build & Test
+name: CI - Build, Test & Sec
 
 on:
   push:
@@ -22,7 +22,16 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm test --if-present
+        run: npm test
+      
+      - name: Build docker image
+        run: docker build -t devops-next-lab .
 
-      - name: Build Next.js app
-        run: npm run build
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: devops-next-lab
+          format: 'table'
+          exit-code: 0
+          ignore-unfixed: true
+          vuln-type: 'os,library'
